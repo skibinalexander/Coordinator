@@ -1,0 +1,35 @@
+{
+  "name": "Coordinator",
+  "version": "0.0.1",
+  "summary": "Implementation base Coordinator for router with modules on Swinject DI",
+  "description": "Implement pod Coordinator by use Coordinator logic routes",
+  "homepage": "https://github.com/skibinalexander/Coordinator.git",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "Skibin Alexander": "skibinalexander@gmail.com"
+  },
+  "source": {
+    "git": "https://github.com/skibinalexander/Coordinator.git",
+    "tag": "0.0.1"
+  },
+  "platforms": {
+    "ios": "13.0"
+  },
+  "swift_versions": "5.0",
+  "source_files": "Coordinator/Classes/**/*",
+  "dependencies": {
+    "Swinject": [
+
+    ],
+    "ModuleLauncher": [
+
+    ],
+    "PanModal": [
+
+    ]
+  },
+  "swift_version": "5.0"
+}

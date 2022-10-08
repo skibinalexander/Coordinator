@@ -1,0 +1,173 @@
+//
+//  CommonSwinject.swift
+//  Parcel
+//
+//  Created by Skibin Alexander on 15.12.2020.
+//  Copyright © 2020 Skibin Development. All rights reserved.
+//
+
+import ModuleLauncher
+import Swinject
+import UIKit
+import PanModal
+
+public protocol NavigationCanvas:   (UINavigationController) {}
+public protocol PanCanvas:          (UIViewController) {}
+public protocol PanDrawer:          (UIViewController & PanModalPresentable) {}
+
+public enum RouteType {
+    case display, push, panShow
+}
+
+public enum DissmisType {
+    case pop, popToRoot, panDissmis
+}
+
+public enum CoordinatorError: Error {
+    case undefinedNavigationCanvas
+    case undefinedPanCanvas
+    case undefinedPanDrawer
+}
+
+/// Глобальный роутер
+open class Coordinator: NSObject {
+    
+    // MARK: - Public Propertioes
+    
+    public var rootContainer: Container?
+    public weak var panDrawer: PanDrawer?
+    
+    // MARK: - Private Properties
+    
+    private var window: UIWindow
+    
+    // MARK: - Init
+    
+    public init(window: UIWindow? = nil) {
+        self.window = window ?? UIWindow(frame: UIScreen.main.bounds)
+        super.init()
+    }
+    
+    // MARK: - Public Implementation
+    
+    /// Подготовка UIWindow к отображению
+    /// - Returns: Window
+    open func prepare() -> UIWindow {
+        window.makeKeyAndVisible()
+        return window
+    }
+    
+    public func display(module: LaunchModule) {
+        rootContainer = module.container
+        window.rootViewController = module.view
+        window.makeKeyAndVisible()
+    }
+    
+    /// Выполинить роутинг модуля
+    /// - Parameters:
+    ///   - module: Модель модуля представления
+    ///   - type: Тип роутинга / представления
+    public func route(
+        module: LaunchModule,
+        type: RouteType,
+        routeId: String? = nil,
+        animated: Bool = true,
+        _ completion: (() -> Void)? = nil
+    ) throws {
+        switch type {
+        case .display:
+            self.display(module, animated: animated)
+        case .push:
+            try self.push(module, animated: animated)
+        case .panShow:
+            try self.panShow(module, routeId: routeId, animated: animated)
+        }
+    }
+    
+    public func dissmis(type: DissmisType, animated: Bool = true) throws {
+        switch type {
+        case .pop:
+            try self.pop(animated: animated)
+        case .popToRoot:
+            try self.popToRoot(animated: animated)
+        case .panDissmis:
+            try self.panDissmis()
+        }
+    }
+    
+    public func custom(navigation: @escaping (NavigationCanvas) -> Void) throws {
+        guard let navigationCanvas = rootContainer?.resolve(NavigationCanvas.self) else {
+            throw CoordinatorError.undefinedNavigationCanvas
+        }
+        
+        navigation(navigationCanvas)
+    }
+    
+    // MARK: - Private Implementation
+    
+}
+
+extension Coordinator {
+    
+    private func display(_ module: LaunchModule, animated: Bool = true) {
+        window.rootViewController = module.view
+        window.makeKeyAndVisible()
+    }
+    
+    private func push(
+        _ module: LaunchModule,
+        animated: Bool = true
+    ) throws {
+        guard let navigationCanvas = rootContainer?.resolve(NavigationCanvas.self) else {
+            throw CoordinatorError.undefinedNavigationCanvas
+        }
+        
+        navigationCanvas.pushViewController(module.view, animated: animated)
+    }
+    
+    private func pop(
+        animated: Bool = true,
+        routeId: String? = nil
+    ) throws {
+        guard let navigationCanvas = rootContainer?.resolve(NavigationCanvas.self, name: routeId) else {
+            throw CoordinatorError.undefinedNavigationCanvas
+        }
+        
+        navigationCanvas.popViewController(animated: animated)
+    }
+    
+    private func popToRoot(
+        routeId: String? = nil,
+        animated: Bool = true
+    ) throws {
+        guard let navigationCanvas = rootContainer?.resolve(NavigationCanvas.self, name: routeId) else {
+            throw CoordinatorError.undefinedNavigationCanvas
+        }
+        
+        navigationCanvas.popToRootViewController(animated: animated)
+    }
+    
+    private func panShow(
+        _ module: LaunchModule,
+        routeId: String? = nil,
+        animated: Bool
+    ) throws {
+        guard let panCanvas = rootContainer?.resolve(PanCanvas.self, name: routeId) else {
+            throw CoordinatorError.undefinedPanCanvas
+        }
+        
+        guard let panDrawer = module.container.resolve(PanDrawer.self, name: routeId) else {
+            throw CoordinatorError.undefinedPanDrawer
+        }
+        
+        self.panDrawer = panDrawer
+        
+        panCanvas.presentPanModal(panDrawer)
+    }
+    
+    public func panDissmis() throws {
+        self.panDrawer?.dismiss(animated: true)
+        self.panDrawer = nil
+    }
+    
+}

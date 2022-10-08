@@ -1,2 +1,2 @@
-# ModuleLauncher
-Module / Feature launcher in container Swinject library 
+# Coordinator
+Coordinator launcher in container Swinject library 

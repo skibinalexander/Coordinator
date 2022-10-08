@@ -1,0 +1,41 @@
+PODS:
+  - Coordinator (0.0.1):
+    - ModuleLauncher
+    - PanModal
+    - Swinject
+  - ModuleLauncher (1.0.0):
+    - Swinject
+  - PanModal (1.2.7)
+  - Swinject (2.8.2)
+
+DEPENDENCIES:
+  - Coordinator (from `../../`)
+  - ModuleLauncher (from `https://github.com/skibinalexander/ModuleLauncher.git/`, tag `1.0.0`)
+  - PanModal
+
+SPEC REPOS:
+  trunk:
+    - PanModal
+    - Swinject
+
+EXTERNAL SOURCES:
+  Coordinator:
+    :path: "../../"
+  ModuleLauncher:
+    :git: https://github.com/skibinalexander/ModuleLauncher.git/
+    :tag: 1.0.0
+
+CHECKOUT OPTIONS:
+  ModuleLauncher:
+    :git: https://github.com/skibinalexander/ModuleLauncher.git/
+    :tag: 1.0.0
+
+SPEC CHECKSUMS:
+  Coordinator: e9070d28d32791a60501b2c8a374fe119bb3b35c
+  ModuleLauncher: f6651eb41e9e98c8046883c9e44ebc3891bf721c
+  PanModal: 3e16ead1a907fb06f4df3f13492fd00149fa4974
+  Swinject: b4a11b31992e8668308dc594ba1cb9b3164a37ab
+
+PODFILE CHECKSUM: 85c5e1a381b44ed10889aeb0a663baaa739916a8
+
+COCOAPODS: 1.11.3
