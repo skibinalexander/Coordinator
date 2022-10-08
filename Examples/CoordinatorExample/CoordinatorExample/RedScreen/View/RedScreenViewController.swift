@@ -37,14 +37,14 @@ final class RedScreenViewController: UIViewController, RedScreenViewProtocol {
     
     @objc func panGreenAction(_ sender: UIBarButtonItem) {
         try? configurator.coordinator.route(
-            module: AppRouter(coordinator: configurator.coordinator).green(),
+            module: AppRouter(coordinator: configurator.coordinator).green(in: configurator.container),
             type: .panShow
         )
     }
     
     @objc func pushGreenAction(_ sender: UIBarButtonItem) {
         try? configurator.coordinator.route(
-            module: AppRouter(coordinator: configurator.coordinator).green(),
+            module: AppRouter(coordinator: configurator.coordinator).green(in: configurator.container),
             type: .push
         )
     }

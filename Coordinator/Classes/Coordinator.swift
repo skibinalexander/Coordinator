@@ -34,7 +34,8 @@ open class Coordinator: NSObject {
     
     // MARK: - Public Propertioes
     
-    public var rootContainer: Container?
+    public weak var navigationCanvas: NavigationCanvas?
+    public weak var panCanvas: PanCanvas?
     public weak var panDrawer: PanDrawer?
     
     // MARK: - Private Properties
@@ -58,7 +59,6 @@ open class Coordinator: NSObject {
     }
     
     public func display(module: LaunchModule) {
-        rootContainer = module.container
         window.rootViewController = module.view
         window.makeKeyAndVisible()
     }
@@ -96,7 +96,7 @@ open class Coordinator: NSObject {
     }
     
     public func custom(navigation: @escaping (NavigationCanvas) -> Void) throws {
-        guard let navigationCanvas = rootContainer?.resolve(NavigationCanvas.self) else {
+        guard let navigationCanvas = navigationCanvas else {
             throw CoordinatorError.undefinedNavigationCanvas
         }
         
@@ -118,18 +118,19 @@ extension Coordinator {
         _ module: LaunchModule,
         animated: Bool = true
     ) throws {
-        guard let navigationCanvas = rootContainer?.resolve(NavigationCanvas.self) else {
+        guard let navigationCanvas = module.container.resolve(NavigationCanvas.self) else {
             throw CoordinatorError.undefinedNavigationCanvas
         }
         
-        navigationCanvas.pushViewController(module.view, animated: animated)
+        self.navigationCanvas = navigationCanvas
+        self.navigationCanvas?.pushViewController(module.view, animated: animated)
     }
     
     private func pop(
         animated: Bool = true,
         routeId: String? = nil
     ) throws {
-        guard let navigationCanvas = rootContainer?.resolve(NavigationCanvas.self, name: routeId) else {
+        guard let navigationCanvas = self.navigationCanvas else {
             throw CoordinatorError.undefinedNavigationCanvas
         }
         
@@ -140,7 +141,7 @@ extension Coordinator {
         routeId: String? = nil,
         animated: Bool = true
     ) throws {
-        guard let navigationCanvas = rootContainer?.resolve(NavigationCanvas.self, name: routeId) else {
+        guard let navigationCanvas = self.navigationCanvas else {
             throw CoordinatorError.undefinedNavigationCanvas
         }
         
@@ -152,7 +153,7 @@ extension Coordinator {
         routeId: String? = nil,
         animated: Bool
     ) throws {
-        guard let panCanvas = rootContainer?.resolve(PanCanvas.self, name: routeId) else {
+        guard let panCanvas = module.container.resolve(PanCanvas.self, name: routeId) else {
             throw CoordinatorError.undefinedPanCanvas
         }
         
@@ -160,6 +161,7 @@ extension Coordinator {
             throw CoordinatorError.undefinedPanDrawer
         }
         
+        self.panCanvas = panCanvas
         self.panDrawer = panDrawer
         
         panCanvas.presentPanModal(panDrawer)

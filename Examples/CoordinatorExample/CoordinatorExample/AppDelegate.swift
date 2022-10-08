@@ -46,10 +46,10 @@ public struct AppRouter {
         )
     }
     
-    func green() -> LaunchModule {
+    func green(in container: Container) -> LaunchModule {
         DependencyModuleFactory().launch(
             configurator: GreenScreenConfigurator.self,
-            in: Container(),
+            in: Container(parent: container),
             preAssembly: {
                 $0.register(Coordinator.self) { _ in
                     coordinator

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'Coordinator'
-  s.version          = '0.0.1'
+  s.version          = '0.0.2'
   s.summary          = 'Implementation base Coordinator for router with modules on Swinject DI'
   s.description      = 'Implement pod Coordinator by use Coordinator logic routes'
 
