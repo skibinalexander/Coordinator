@@ -105,7 +105,17 @@ open class Coordinator: NSObject {
         navigation(navigationCanvas)
     }
     
-    // MARK: - Private Implementation
+    public func open(url: URL) throws {
+        if UIApplication.shared.canOpenURL(url) {
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            } else {
+                UIApplication.shared.openURL(url)
+            }
+        } else {
+            assertionFailure()
+        }
+    }
     
 }
 
@@ -169,18 +179,6 @@ extension Coordinator {
         self.panDrawer = panDrawer
         
         panCanvas.presentPanModal(panDrawer)
-    }
-    
-    private func open(url: URL) throws {
-        if UIApplication.shared.canOpenURL(url) {
-            if #available(iOS 10.0, *) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            } else {
-                UIApplication.shared.openURL(url)
-            }
-        } else {
-            assertionFailure()
-        }
     }
     
     // MARK: - Dissmis Modules
