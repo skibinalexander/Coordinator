@@ -41,11 +41,13 @@ open class Coordinator: NSObject {
     // MARK: - Private Properties
     
     private var window: UIWindow
+    private var appDelegate: UIApplicationDelegate?
     
     // MARK: - Init
     
-    public init(window: UIWindow? = nil) {
+    public init(window: UIWindow? = nil, appDelegate: UIApplicationDelegate? = nil) {
         self.window = window ?? UIWindow(frame: UIScreen.main.bounds)
+        self.appDelegate = appDelegate
         super.init()
     }
     
@@ -109,6 +111,8 @@ open class Coordinator: NSObject {
 
 extension Coordinator {
     
+    // MARK: - Show Modules
+    
     private func display(_ module: LaunchModule, animated: Bool = true) {
         window.rootViewController = module.view
         window.makeKeyAndVisible()
@@ -167,7 +171,21 @@ extension Coordinator {
         panCanvas.presentPanModal(panDrawer)
     }
     
-    public func panDissmis() throws {
+    private func open(url: URL) throws {
+        if UIApplication.shared.canOpenURL(url) {
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            } else {
+                UIApplication.shared.openURL(url)
+            }
+        } else {
+            assertionFailure()
+        }
+    }
+    
+    // MARK: - Dissmis Modules
+    
+    private func panDissmis() throws {
         self.panDrawer?.dismiss(animated: true)
         self.panDrawer = nil
     }
