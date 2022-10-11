@@ -77,9 +77,8 @@ open class Coordinator: NSObject {
         module: LaunchModule,
         type: RouteType,
         routeId: String? = nil,
-        handle view: ((UIViewController) -> Void)? = nil,
         animated: Bool = true,
-        _ completion: (() -> Void)? = nil
+        _ completion: ((UIViewController) -> Void)? = nil
     ) throws {
         switch type {
         case .display:
@@ -89,7 +88,12 @@ open class Coordinator: NSObject {
         case .panShow:
             try self.panShow(module, routeId: routeId, animated: animated)
         case .modal:
-            try self.modalShow(module, routeId: routeId, animated: animated)
+            try self.modalShow(
+                module,
+                routeId: routeId,
+                animated: animated,
+                completion
+            )
         }
     }
     
@@ -172,7 +176,6 @@ extension Coordinator {
     private func panShow(
         _ module: LaunchModule,
         routeId: String? = nil,
-        handle view: ((UIViewController) -> Void)? = nil,
         animated: Bool
     ) throws {
         guard let panCanvas = module.container.resolve(PanCanvas.self, name: routeId) else {
@@ -192,8 +195,8 @@ extension Coordinator {
     private func modalShow(
         _ module: LaunchModule,
         routeId: String? = nil,
-        handle view: ((UIViewController) -> Void)? = nil,
-        animated: Bool
+        animated: Bool,
+        _ completion: ((UIViewController) -> Void)? = nil
     ) throws {
         guard let modalCanvas = module.container.resolve(ModalCanvas.self, name: routeId) else {
             throw CoordinatorError.undefinedPanCanvas
@@ -206,7 +209,12 @@ extension Coordinator {
         self.modalCanvas = modalCanvas
         self.modalDrawer = modalDrawer
         
-        modalCanvas.present(modalDrawer, animated: animated)
+        modalCanvas.present(
+            modalDrawer,
+            animated: animated
+        ) {
+            completion?(modalDrawer)
+        }
     }
     
     // MARK: - Dissmis Modules
