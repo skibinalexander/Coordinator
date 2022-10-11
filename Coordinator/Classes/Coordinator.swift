@@ -13,10 +13,12 @@ import PanModal
 
 public protocol NavigationCanvas:   (UINavigationController) {}
 public protocol PanCanvas:          (UIViewController) {}
+public protocol ModalCanvas:        (UIViewController) {}
 public protocol PanDrawer:          (UIViewController & PanModalPresentable) {}
+public protocol ModalDrawer:        (UIViewController) {}
 
 public enum RouteType {
-    case display, push, panShow
+    case display, push, panShow, modal
 }
 
 public enum DissmisType {
@@ -37,6 +39,8 @@ open class Coordinator: NSObject {
     public weak var navigationCanvas: NavigationCanvas?
     public weak var panCanvas: PanCanvas?
     public weak var panDrawer: PanDrawer?
+    public weak var modalCanvas: ModalCanvas?
+    public weak var modalDrawer: ModalDrawer?
     
     // MARK: - Private Properties
     
@@ -73,6 +77,7 @@ open class Coordinator: NSObject {
         module: LaunchModule,
         type: RouteType,
         routeId: String? = nil,
+        handle view: ((UIViewController) -> Void)? = nil,
         animated: Bool = true,
         _ completion: (() -> Void)? = nil
     ) throws {
@@ -83,6 +88,8 @@ open class Coordinator: NSObject {
             try self.push(module, animated: animated)
         case .panShow:
             try self.panShow(module, routeId: routeId, animated: animated)
+        case .modal:
+            try self.modalShow(module, routeId: routeId, animated: animated)
         }
     }
     
@@ -165,6 +172,7 @@ extension Coordinator {
     private func panShow(
         _ module: LaunchModule,
         routeId: String? = nil,
+        handle view: ((UIViewController) -> Void)? = nil,
         animated: Bool
     ) throws {
         guard let panCanvas = module.container.resolve(PanCanvas.self, name: routeId) else {
@@ -178,7 +186,27 @@ extension Coordinator {
         self.panCanvas = panCanvas
         self.panDrawer = panDrawer
         
-        panCanvas.presentPanModal(panDrawer)
+        panCanvas.present(panDrawer, animated: animated)
+    }
+    
+    private func modalShow(
+        _ module: LaunchModule,
+        routeId: String? = nil,
+        handle view: ((UIViewController) -> Void)? = nil,
+        animated: Bool
+    ) throws {
+        guard let modalCanvas = module.container.resolve(ModalCanvas.self, name: routeId) else {
+            throw CoordinatorError.undefinedPanCanvas
+        }
+        
+        guard let modalDrawer = module.container.resolve(ModalDrawer.self, name: routeId) else {
+            throw CoordinatorError.undefinedPanDrawer
+        }
+        
+        self.modalCanvas = modalCanvas
+        self.modalDrawer = modalDrawer
+        
+        modalCanvas.present(modalDrawer, animated: animated)
     }
     
     // MARK: - Dissmis Modules
