@@ -7,4 +7,4 @@
 //
 import Coordinator
 
-protocol BaseNavigationViewProtocol: AnyObject, NavigationCanvas {}
+protocol BaseNavigationViewProtocol: NavigationCanvas {}

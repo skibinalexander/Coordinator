@@ -29,18 +29,12 @@ public enum CoordinatorError: Error {
     case undefinedNavigationCanvas
     case undefinedPanCanvas
     case undefinedPanDrawer
+    case undefinedModalCanvas
+    case undefinedModalDrawer
 }
 
 /// Глобальный роутер
 open class Coordinator: NSObject {
-    
-    // MARK: - Public Propertioes
-    
-    public weak var navigationCanvas: NavigationCanvas?
-    public weak var panCanvas: PanCanvas?
-    public weak var panDrawer: PanDrawer?
-    public weak var modalCanvas: ModalCanvas?
-    public weak var modalDrawer: ModalDrawer?
     
     // MARK: - Private Properties
     
@@ -97,21 +91,28 @@ open class Coordinator: NSObject {
         }
     }
     
-    public func dissmis(type: DissmisType, animated: Bool = true) throws {
+    public func dissmis(
+        type: DissmisType,
+        animated: Bool = true,
+        in container: Container
+    ) throws {
         switch type {
         case .pop:
-            try self.pop(animated: animated)
+            try self.pop(animated: animated, in: container)
         case .popToRoot:
-            try self.popToRoot(animated: animated)
+            try self.popToRoot(animated: animated, in: container)
         case .pan:
-            try self.panDissmis(animated: animated)
+            try self.panDissmis(animated: animated, in: container)
         case .modal:
-            try self.modalDissmis(animated: animated)
+            try self.modalDissmis(animated: animated, in: container)
         }
     }
     
-    public func custom(navigation: @escaping (NavigationCanvas) -> Void) throws {
-        guard let navigationCanvas = navigationCanvas else {
+    public func custom(
+        navigation: @escaping (NavigationCanvas) -> Void,
+        in container: Container
+    ) throws {
+        guard let navigationCanvas = container.resolve(NavigationCanvas.self) else {
             throw CoordinatorError.undefinedNavigationCanvas
         }
         
@@ -149,15 +150,15 @@ extension Coordinator {
             throw CoordinatorError.undefinedNavigationCanvas
         }
         
-        self.navigationCanvas = navigationCanvas
-        self.navigationCanvas?.pushViewController(module.view, animated: animated)
+        navigationCanvas.pushViewController(module.view, animated: animated)
     }
     
     private func pop(
         animated: Bool = true,
-        routeId: String? = nil
+        routeId: String? = nil,
+        in container: Container
     ) throws {
-        guard let navigationCanvas = self.navigationCanvas else {
+        guard let navigationCanvas = container.resolve(NavigationCanvas.self) else {
             throw CoordinatorError.undefinedNavigationCanvas
         }
         
@@ -166,9 +167,10 @@ extension Coordinator {
     
     private func popToRoot(
         routeId: String? = nil,
-        animated: Bool = true
+        animated: Bool = true,
+        in container: Container
     ) throws {
-        guard let navigationCanvas = self.navigationCanvas else {
+        guard let navigationCanvas = container.resolve(NavigationCanvas.self) else {
             throw CoordinatorError.undefinedNavigationCanvas
         }
         
@@ -178,7 +180,7 @@ extension Coordinator {
     private func panShow(
         _ module: LaunchModule,
         routeId: String? = nil,
-        animated: Bool
+        animated: Bool = true
     ) throws {
         guard let panCanvas = module.container.resolve(PanCanvas.self, name: routeId) else {
             throw CoordinatorError.undefinedPanCanvas
@@ -188,16 +190,13 @@ extension Coordinator {
             throw CoordinatorError.undefinedPanDrawer
         }
         
-        self.panCanvas = panCanvas
-        self.panDrawer = panDrawer
-        
         panCanvas.present(panDrawer, animated: animated)
     }
     
     private func modalShow(
         _ module: LaunchModule,
         routeId: String? = nil,
-        animated: Bool,
+        animated: Bool = true,
         _ completion: ((UIViewController) -> Void)? = nil
     ) throws {
         guard let modalCanvas = module.container.resolve(ModalCanvas.self, name: routeId) else {
@@ -207,9 +206,6 @@ extension Coordinator {
         guard let modalDrawer = module.container.resolve(ModalDrawer.self, name: routeId) else {
             throw CoordinatorError.undefinedPanDrawer
         }
-        
-        self.modalCanvas = modalCanvas
-        self.modalDrawer = modalDrawer
         
         modalCanvas.present(
             modalDrawer,
@@ -221,14 +217,20 @@ extension Coordinator {
     
     // MARK: - Dissmis Modules
     
-    private func panDissmis(animated: Bool) throws {
-        self.panDrawer?.dismiss(animated: animated)
-        self.panDrawer = nil
+    private func panDissmis(animated: Bool, in container: Container) throws {
+        guard let panDrawer = container.resolve(PanDrawer.self) else {
+            throw CoordinatorError.undefinedPanDrawer
+        }
+        
+        panDrawer.dismiss(animated: animated)
     }
     
-    private func modalDissmis(animated: Bool) throws {
-        self.modalDrawer?.dismiss(animated: animated)
-        self.modalDrawer = nil
+    private func modalDissmis(animated: Bool, in container: Container) throws {
+        guard let modalDrawer = container.resolve(ModalDrawer.self) else {
+            throw CoordinatorError.undefinedModalDrawer
+        }
+        
+        modalDrawer.dismiss(animated: animated)
     }
     
 }
