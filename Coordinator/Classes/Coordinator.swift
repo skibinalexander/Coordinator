@@ -18,11 +18,11 @@ public protocol PanDrawer:          (UIViewController & PanModalPresentable) {}
 public protocol ModalDrawer:        (UIViewController) {}
 
 public enum RouteType {
-    case display, push, panShow, modal
+    case display, push, pan, modal
 }
 
 public enum DissmisType {
-    case pop, popToRoot, panDissmis
+    case pop, popToRoot, pan, modal
 }
 
 public enum CoordinatorError: Error {
@@ -85,7 +85,7 @@ open class Coordinator: NSObject {
             self.display(module, animated: animated)
         case .push:
             try self.push(module, animated: animated)
-        case .panShow:
+        case .pan:
             try self.panShow(module, routeId: routeId, animated: animated)
         case .modal:
             try self.modalShow(
@@ -103,8 +103,10 @@ open class Coordinator: NSObject {
             try self.pop(animated: animated)
         case .popToRoot:
             try self.popToRoot(animated: animated)
-        case .panDissmis:
-            try self.panDissmis()
+        case .pan:
+            try self.panDissmis(animated: animated)
+        case .modal:
+            try self.modalDissmis(animated: animated)
         }
     }
     
@@ -219,9 +221,14 @@ extension Coordinator {
     
     // MARK: - Dissmis Modules
     
-    private func panDissmis() throws {
-        self.panDrawer?.dismiss(animated: true)
+    private func panDissmis(animated: Bool) throws {
+        self.panDrawer?.dismiss(animated: animated)
         self.panDrawer = nil
+    }
+    
+    private func modalDissmis(animated: Bool) throws {
+        self.modalDrawer?.dismiss(animated: animated)
+        self.modalDrawer = nil
     }
     
 }

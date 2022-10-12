@@ -22,7 +22,7 @@ final class GreenScreenConfigurator: NSObject, Assembly {
     // MARK: - Init
     
     deinit {
-        try? coodinator.dissmis(type: .panDissmis)
+        try? coodinator.dissmis(type: .pan)
         print("GreenScreenConfigurator -> deinit")
     }
 
