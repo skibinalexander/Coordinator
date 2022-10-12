@@ -190,7 +190,7 @@ extension Coordinator {
             throw CoordinatorError.undefinedPanDrawer
         }
         
-        panCanvas.present(panDrawer, animated: animated)
+        panCanvas.presentPanModal(panDrawer)
     }
     
     private func modalShow(
